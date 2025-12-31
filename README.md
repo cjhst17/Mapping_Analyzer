@@ -95,6 +95,21 @@ cat results/analysis_results.json
 
 ## Pipeline Configuration
 
-- **Trigger**: Any commit to `uploads/` or `src/` folders
-- **Automatic**: No manual trigger needed
-- **Output**: JSON results published as artifacts
+You have two options:
+
+### Option A: GitHub Actions (Recommended)
+- Uses `.github/workflows/ci.yml`
+- Runs directly on GitHub
+- No setup needed, automatic on push
+- View results in **Actions** tab
+
+### Option B: Azure Pipelines
+- Uses `.ado/pipelines/ci.yml`
+- Runs on Azure DevOps
+- Requires service connection setup
+- See `AZURE_PIPELINES_SETUP.md` for details
+
+Both pipelines:
+- Trigger on commits to `uploads/`, `src/`, `tests/`
+- Run analysis automatically
+- Publish results as artifacts
