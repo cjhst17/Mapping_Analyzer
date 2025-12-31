@@ -1,0 +1,29 @@
+parameters:
+  - name: pythonVersion
+    type: string
+    default: '3.11'
+  
+  - name: testDirectory
+    type: string
+    default: 'tests'
+
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: ${{ parameters.pythonVersion }}
+      addToPath: true
+    displayName: 'Setup Python ${{ parameters.pythonVersion }}'
+
+  - script: |
+      python -m pip install --upgrade pip
+      pip install -r requirements.txt
+      pip install -r requirements-dev.txt
+    displayName: 'Install dependencies'
+
+  - script: |
+      python -m pytest ${{ parameters.testDirectory }} -v \
+        --junitxml=junit/test-results.xml \
+        --cov=src \
+        --cov-report=xml \
+        --cov-report=html
+    displayName: 'Run tests with coverage'

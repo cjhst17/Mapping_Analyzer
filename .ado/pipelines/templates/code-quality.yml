@@ -1,0 +1,44 @@
+parameters:
+  - name: pythonVersion
+    type: string
+    default: '3.11'
+  
+  - name: sourceDirectory
+    type: string
+    default: 'src'
+
+steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: ${{ parameters.pythonVersion }}
+      addToPath: true
+    displayName: 'Setup Python'
+
+  - script: |
+      python -m pip install pylint flake8 black mypy isort
+    displayName: 'Install code quality tools'
+
+  - script: |
+      pylint ${{ parameters.sourceDirectory }} \
+        --disable=all --enable=E,F \
+        --exit-zero \
+        --output-format=json > pylint-report.json || true
+    displayName: 'Run Pylint'
+
+  - script: |
+      flake8 ${{ parameters.sourceDirectory }} \
+        --format=json > flake8-report.json || true
+    displayName: 'Run Flake8'
+
+  - script: |
+      black --check ${{ parameters.sourceDirectory }} || true
+    displayName: 'Check Black formatting'
+
+  - script: |
+      mypy ${{ parameters.sourceDirectory }} \
+        --junit-xml mypy-report.xml || true
+    displayName: 'Run MyPy type checking'
+
+  - script: |
+      isort --check-only ${{ parameters.sourceDirectory }} || true
+    displayName: 'Check import sorting'

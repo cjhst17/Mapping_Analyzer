@@ -1,0 +1,51 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - uploads/*
+      - src/*
+      - tests/*
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  pythonVersion: '3.11'
+
+stages:
+  - stage: Analyze
+    displayName: 'Analyze Uploaded Files'
+    jobs:
+      - job: ProcessFiles
+        displayName: 'Process X12 Files'
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '$(pythonVersion)'
+              addToPath: true
+            displayName: 'Setup Python'
+
+          - script: |
+              python -m pip install --upgrade pip
+              pip install -r requirements.txt
+            displayName: 'Install dependencies'
+
+          - script: |
+              python -m pytest tests/ -v
+            displayName: 'Run tests'
+            continueOnError: true
+
+          - script: |
+              python src/analyze.py --input-dir uploads/ --output-dir results/
+            displayName: 'Run analysis on uploaded files'
+            continueOnError: true
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(System.DefaultWorkingDirectory)/results'
+              ArtifactName: 'analysis-results'
+              publishLocation: 'Container'
+            condition: always()
+            displayName: 'Publish analysis results'
